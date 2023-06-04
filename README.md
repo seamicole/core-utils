@@ -1,2 +1,2 @@
 # core-utils
-A repository for generalized reusable Python utilities
+A repository for core Python utilities
