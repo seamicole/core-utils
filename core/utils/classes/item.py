@@ -46,7 +46,7 @@ class ItemMetaclass(type):
         cls_new = super().__new__(cls, name, bases, attrs)
 
         # Initialize meta
-        cls_new._meta = cls_new.Meta()
+        cls_new._meta = cls_new.Meta(ItemClass=cls_new)
 
         # Return new class
         return cls_new
@@ -57,7 +57,7 @@ class ItemMetaclass(type):
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-class Item:
+class Item(metaclass=ItemMetaclass):
     """A utility class that represents an arbitrary Python object"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -130,7 +130,7 @@ class Item:
         # │ __INIT__
         # └─────────────────────────────────────────────────────────────────────────────
 
-        def __init__(self) -> None:
+        def __init__(self, ItemClass: ItemMetaclass) -> None:
             """Init Method"""
 
             # Initialize and set keys
