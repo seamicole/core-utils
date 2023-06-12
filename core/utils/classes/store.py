@@ -9,6 +9,7 @@ from abc import ABC, abstractmethod
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.utils.classes.collection import Collection
+from core.utils.classes.collections.dict_collection import DictCollection
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -24,10 +25,20 @@ class Store(ABC):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     # Initialize collection class
-    CollectionClass: Collection = DictCollection
+    CollectionClass: type[Collection] = DictCollection
 
     # Declare type of collections by key
     _collections_by_key: dict[str, Collection]
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ __INIT__
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def __init__(self) -> None:
+        """Init Method"""
+
+        # Initialize collections by key
+        self._collections_by_key = {}
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ CREATE
@@ -41,7 +52,7 @@ class Store(ABC):
         # Initialize collection class
         CollectionClass = CollectionClass or self.CollectionClass
 
-        # Initialize collection instance
+        # Initialize collection istance
         collection = (
             CollectionClass
             if isinstance(CollectionClass, Collection)

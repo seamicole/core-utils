@@ -12,52 +12,11 @@ from typing import Any
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
-# │ ITEM METACLASS
-# └─────────────────────────────────────────────────────────────────────────────────────
-
-
-class ItemMetaclass(type):
-    """A custom metaclass for the Item utility class"""
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ CLASS ATTRIBUTES
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    # Declare type of Meta
-    Meta: type[Item.Meta]
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ INSTANCE ATTRIBUTES
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    # Declare type of meta
-    _meta: Item.Meta
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ __NEW__
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    def __new__(
-        cls, name: str, bases: tuple[type, ...], attrs: dict[str, Any]
-    ) -> ItemMetaclass:
-        """New Method"""
-
-        # Create new class
-        cls_new = super().__new__(cls, name, bases, attrs)
-
-        # Initialize meta
-        cls_new._meta = cls_new.Meta(ItemClass=cls_new)
-
-        # Return new class
-        return cls_new
-
-
-# ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ ITEM
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-class Item(metaclass=ItemMetaclass):
+class Item:
     """A utility class that represents an arbitrary Python object"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -66,6 +25,16 @@ class Item(metaclass=ItemMetaclass):
 
     # Declare type of meta
     _meta: Item.Meta
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ INIT SUBCLASS
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        """Init Subclass Method"""
+
+        # Initialize meta
+        cls._meta = cls.Meta(ItemClass=cls)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __REPR__
@@ -130,7 +99,7 @@ class Item(metaclass=ItemMetaclass):
         # │ __INIT__
         # └─────────────────────────────────────────────────────────────────────────────
 
-        def __init__(self, ItemClass: ItemMetaclass) -> None:
+        def __init__(self, ItemClass: type[Item]) -> None:
             """Init Method"""
 
             # Initialize and set keys
