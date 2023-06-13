@@ -10,6 +10,7 @@ from abc import ABC, abstractmethod
 
 from core.utils.classes.collection import Collection
 from core.utils.classes.collections.dict_collection import DictCollection
+from core.utils.exceptions import DoesNotExistError
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -79,11 +80,16 @@ class Store(ABC):
     # │ GET
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def get(self, key: str) -> Collection | None:
+    def get(self, key: str) -> Collection:
         """Returns a collection by key"""
 
-        # Return collection
-        return self._collections_by_key.get(key, None)
+        # Check if collection exists
+        if key in self._collections_by_key:
+            # Return collection
+            return self._collections_by_key[key]
+
+        # Raise DoesNotExistError
+        raise DoesNotExistError(f"A collection with key '{key}' does not exist")
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ GET OR CREATE
@@ -94,7 +100,12 @@ class Store(ABC):
     ) -> Collection:
         """Returns a collection by key, creating it if it doesn't exist"""
 
-        # Get or create collection
-        return self.get(key=key) or self.create(
-            key=key, CollectionClass=CollectionClass
-        )
+        # Initialize try-except block
+        try:
+            # Return collection
+            return self.get(key=key)
+
+        # Handle DoesNotExistError
+        except DoesNotExistError:
+            # Create collection
+            return self.create(key=key, CollectionClass=CollectionClass)

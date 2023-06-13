@@ -10,6 +10,9 @@ from typing import Any
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
+from core.utils.classes.collection import Collection
+from core.utils.classes.items import Items
+
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ ITEM
@@ -26,6 +29,9 @@ class Item:
     # Declare type of meta
     _meta: Item.Meta
 
+    # Declare type of items
+    items: Items
+
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ INIT SUBCLASS
     # └─────────────────────────────────────────────────────────────────────────────────
@@ -35,6 +41,9 @@ class Item:
 
         # Initialize meta
         cls._meta = cls.Meta(ItemClass=cls)
+
+        # Set items
+        cls.items = cls._meta.items
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __REPR__
@@ -85,12 +94,18 @@ class Item:
         # │ CLASS ATTRIBUTES
         # └─────────────────────────────────────────────────────────────────────────────
 
+        # Initialize items
+        ITEMS: Collection | Items | None = None
+
         # Initialize keys
         KEYS: tuple[str, ...] = ()
 
         # ┌─────────────────────────────────────────────────────────────────────────────
         # │ INSTANCE ATTRIBUTES
         # └─────────────────────────────────────────────────────────────────────────────
+
+        # Declare type of items
+        items: Items
 
         # Declare type of keys
         keys: tuple[str, ...]
@@ -101,6 +116,15 @@ class Item:
 
         def __init__(self, ItemClass: type[Item]) -> None:
             """Init Method"""
+
+            # Initialize and set items
+            self.items = (
+                self.ITEMS.all()
+                if isinstance(self.ITEMS, Collection)
+                else self.ITEMS
+                if isinstance(self.ITEMS, Items)
+                else Items(collection=None)
+            )
 
             # Initialize and set keys
             self.keys = tuple(self.KEYS)
