@@ -31,14 +31,8 @@ class DictCollection(Collection):
     def head(self, n: int, items: Items | None = None) -> Items:
         """Returns the first n items in the collection"""
 
-        # Initialize items
-        items = items if items is not None else self.all()
-
-        # Append head operation to operations
-        items._operations += (lambda d: list(d.values())[:n],)
-
-        # Return items
-        return items
+        # Apply head operation to items
+        return self.apply(items, lambda d: {k: v for k, v in list(d.items())[:n]})
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ SLICE
@@ -47,14 +41,10 @@ class DictCollection(Collection):
     def slice(self, start: int, stop: int, items: Items | None = None) -> Items:
         """Returns a slice of items in the collection"""
 
-        # Initialize items
-        items = items if items is not None else self.all()
-
-        # Append head operation to operations
-        items._operations += (lambda d: list(d.values())[start:stop],)
-
-        # Return items
-        return items
+        # Apply slice operation to items
+        return self.apply(
+            items, lambda d: {k: v for k, v in list(d.items())[start:stop]}
+        )
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ TAIL
@@ -63,11 +53,5 @@ class DictCollection(Collection):
     def tail(self, n: int, items: Items | None = None) -> Items:
         """Returns the last n items in the collection"""
 
-        # Initialize items
-        items = items if items is not None else self.all()
-
-        # Append head operation to operations
-        items._operations += (lambda d: list(d.values())[:-n],)
-
-        # Return items
-        return items
+        # Apply tail operation to items
+        return self.apply(items, lambda d: {k: v for k, v in list(d.items())[-n:]})

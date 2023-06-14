@@ -27,7 +27,7 @@ class Items:
     # └─────────────────────────────────────────────────────────────────────────────────
 
     # Declare type of collection
-    _collection: Collection | None
+    _collection: Collection
 
     # Declare type of operations
     _operations: tuple[Any, ...]
@@ -36,7 +36,7 @@ class Items:
     # │ __INIT__
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def __init__(self, collection: Collection | None, operations: tuple[Any, ...] = ()):
+    def __init__(self, collection: Collection, operations: tuple[Any, ...] = ()):
         """Init Method"""
 
         # Set collection
@@ -46,18 +46,24 @@ class Items:
         self._operations = operations
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ _COPY
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def _copy(self) -> Items:
+        """Returns a copy of the current collection"""
+
+        # Initialize and return a copy of the current collection
+        return Items(collection=self._collection, operations=self._operations)
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ HEAD
     # └─────────────────────────────────────────────────────────────────────────────────
 
     def head(self, n: int = 10) -> Items:
         """Returns the first n items in the collection"""
 
-        # Return self if collection is None
-        if self._collection is None:
-            return self
-
         # Initialize and return a subset of items
-        return self._collection.head(n=n, items=self)
+        return self._collection.head(n=n, items=self._copy())
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ SLICE
@@ -66,12 +72,8 @@ class Items:
     def slice(self, start: int, stop: int) -> Items:
         """Returns a slice of items in the collection"""
 
-        # Return self if collection is None
-        if self._collection is None:
-            return self
-
         # Initialize and return a subset of items
-        return self._collection.slice(start=start, stop=stop, items=self)
+        return self._collection.slice(start=start, stop=stop, items=self._copy())
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ TAIL
@@ -80,9 +82,5 @@ class Items:
     def tail(self, n: int = 10) -> Items:
         """Returns the last n items in the collection"""
 
-        # Return self if collection is None
-        if self._collection is None:
-            return self
-
         # Initialize and return a subset of items
-        return self._collection.tail(n=n, items=self)
+        return self._collection.tail(n=n, items=self._copy())

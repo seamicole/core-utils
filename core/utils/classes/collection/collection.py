@@ -3,12 +3,16 @@
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from abc import ABC, abstractmethod
+from typing import Any, Generator, TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.utils.classes.item.items import Items
+
+if TYPE_CHECKING:
+    from core.utils.classes.item.item import Item
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -28,6 +32,30 @@ class Collection(ABC):
 
         # Return all items
         return Items(collection=self)
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ APPLY
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def apply(self, items: Items | None, *operations: Any) -> Items:
+        """Applies a series of operations to a collection of items"""
+
+        # Initialize items
+        items = items if items is not None else self.all()
+
+        # Append head operation to operations
+        items._operations += operations
+
+        # Return items
+        return items
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ COLLECT
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    @abstractmethod
+    def collect(self, items: Items | None = None) -> Generator[Item, None, None]:
+        """Yields items in the collection"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ HEAD
