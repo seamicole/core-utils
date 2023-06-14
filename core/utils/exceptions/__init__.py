@@ -26,3 +26,12 @@ class Error(Exception):
 
 class DoesNotExistError(Error):
     """Raised when an expected resource does not exist"""
+
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ UNDEFINED ERROR
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+
+class UndefinedError(Error):
+    """Raised when an expected resource is undefined"""

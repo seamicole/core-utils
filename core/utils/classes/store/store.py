@@ -8,8 +8,8 @@ from abc import ABC, abstractmethod
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from core.utils.classes.collection import Collection
-from core.utils.classes.collections.dict_collection import DictCollection
+from core.utils.classes.collection.collection import Collection
+from core.utils.classes.collection.dict_collection import DictCollection
 from core.utils.exceptions import DoesNotExistError
 
 

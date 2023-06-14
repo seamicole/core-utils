@@ -4,70 +4,85 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from core.utils.classes.collection import Collection
-
 if TYPE_CHECKING:
-    from core.utils.classes.items import Items
+    from core.utils.classes.collection.collection import Collection
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
-# │ DICT COLLECTION
+# │ ITEMS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-class DictCollection(Collection):
-    """A utility class that represents a dictionary collection of items"""
+class Items:
+    """A utility class that represents a collection of Item instances"""
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ CLASS ATTRIBUTES
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    # Declare type of collection
+    _collection: Collection | None
+
+    # Declare type of operations
+    _operations: tuple[Any, ...]
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ __INIT__
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def __init__(self, collection: Collection | None, operations: tuple[Any, ...] = ()):
+        """Init Method"""
+
+        # Set collection
+        self._collection = collection
+
+        # Set operations
+        self._operations = operations
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ HEAD
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def head(self, n: int, items: Items | None = None) -> Items:
+    def head(self, n: int = 10) -> Items:
         """Returns the first n items in the collection"""
 
-        # Initialize items
-        items = items if items is not None else self.all()
+        # Return self if collection is None
+        if self._collection is None:
+            return self
 
-        # Append head operation to operations
-        items._operations += (lambda d: list(d.values())[:n],)
-
-        # Return items
-        return items
+        # Initialize and return a subset of items
+        return self._collection.head(n=n, items=self)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ SLICE
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def slice(self, start: int, stop: int, items: Items | None = None) -> Items:
+    def slice(self, start: int, stop: int) -> Items:
         """Returns a slice of items in the collection"""
 
-        # Initialize items
-        items = items if items is not None else self.all()
+        # Return self if collection is None
+        if self._collection is None:
+            return self
 
-        # Append head operation to operations
-        items._operations += (lambda d: list(d.values())[start:stop],)
-
-        # Return items
-        return items
+        # Initialize and return a subset of items
+        return self._collection.slice(start=start, stop=stop, items=self)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ TAIL
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def tail(self, n: int, items: Items | None = None) -> Items:
+    def tail(self, n: int = 10) -> Items:
         """Returns the last n items in the collection"""
 
-        # Initialize items
-        items = items if items is not None else self.all()
+        # Return self if collection is None
+        if self._collection is None:
+            return self
 
-        # Append head operation to operations
-        items._operations += (lambda d: list(d.values())[:-n],)
-
-        # Return items
-        return items
+        # Initialize and return a subset of items
+        return self._collection.tail(n=n, items=self)

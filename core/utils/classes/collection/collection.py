@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from core.utils.classes.items import Items
+from core.utils.classes.item.items import Items
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────

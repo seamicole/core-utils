@@ -10,8 +10,44 @@ from typing import Any
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
-from core.utils.classes.collection import Collection
-from core.utils.classes.items import Items
+from core.utils.classes.collection.collection import Collection
+from core.utils.classes.item.items import Items
+from core.utils.exceptions import UndefinedError
+
+
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ ITEM METACLASS
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+
+class ItemMetaclass(type):
+    """A metaclass for the Item class"""
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ CLASS ATTRIBUTES
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    # Declare type of meta
+    _meta: Item.Meta
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ ITEMS
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    @property
+    def items(cls) -> Items:
+        """Returns the items of the item's meta instance"""
+
+        # Get items
+        items = cls._meta.items
+
+        # Check if items is None
+        if items is None:
+            # Raise UndefinedError
+            raise UndefinedError(f"{cls.__name__}.Meta.ITEMS is undefined")
+
+        # Return items
+        return items
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -19,7 +55,7 @@ from core.utils.classes.items import Items
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-class Item:
+class Item(metaclass=ItemMetaclass):
     """A utility class that represents an arbitrary Python object"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
@@ -28,9 +64,6 @@ class Item:
 
     # Declare type of meta
     _meta: Item.Meta
-
-    # Declare type of items
-    items: Items
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ INIT SUBCLASS
@@ -41,9 +74,6 @@ class Item:
 
         # Initialize meta
         cls._meta = cls.Meta(ItemClass=cls)
-
-        # Set items
-        cls.items = cls._meta.items
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __REPR__
@@ -77,6 +107,10 @@ class Item:
             # Get value
             value = getattr(self, key)
 
+            # Continue if value is not null
+            if value not in (None, ""):
+                continue
+
             # Return the string of the value
             return str(value)
 
@@ -105,7 +139,7 @@ class Item:
         # └─────────────────────────────────────────────────────────────────────────────
 
         # Declare type of items
-        items: Items
+        items: Items | None
 
         # Declare type of keys
         keys: tuple[str, ...]
@@ -119,11 +153,7 @@ class Item:
 
             # Initialize and set items
             self.items = (
-                self.ITEMS.all()
-                if isinstance(self.ITEMS, Collection)
-                else self.ITEMS
-                if isinstance(self.ITEMS, Items)
-                else Items(collection=None)
+                self.ITEMS.all() if isinstance(self.ITEMS, Collection) else self.ITEMS
             )
 
             # Initialize and set keys
