@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING
+from typing import Any, Iterator, TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
@@ -12,6 +12,7 @@ from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from core.utils.classes.collection.collection import Collection
+    from core.utils.classes.item.item import Item
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -44,6 +45,16 @@ class Items:
 
         # Set operations
         self._operations = operations
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ __ITER__
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def __iter__(self) -> Iterator[Item]:
+        """Iter Method"""
+
+        # Yield from collection
+        yield from self._collection.collect(items=self)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ _COPY

@@ -2,6 +2,8 @@
 # │ GENERAL IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from typing import Any, Generator, TYPE_CHECKING
 
@@ -64,6 +66,14 @@ class Collection(ABC):
     @abstractmethod
     def head(self, n: int, items: Items | None = None) -> Items:
         """Returns the first n items in the collection"""
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ PUSH
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    @abstractmethod
+    def push(self, item: Item) -> None:
+        """Pushes an item to the collection"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ SLICE
