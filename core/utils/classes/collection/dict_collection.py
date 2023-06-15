@@ -11,6 +11,7 @@ from typing import Any, Generator, TYPE_CHECKING
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.utils.classes.collection.collection import Collection
+from core.utils.exceptions import DuplicateKeyError
 
 if TYPE_CHECKING:
     from core.utils.classes.item.item import Item
@@ -35,6 +36,9 @@ class DictCollection(Collection):
     # Declare type of item IDs by key
     _item_ids_by_key: dict[Any, int]
 
+    # Declare type of item IDs by index
+    _item_ids_by_index: dict[Any, set[int]]
+
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __INIT__
     # └─────────────────────────────────────────────────────────────────────────────────
@@ -47,6 +51,9 @@ class DictCollection(Collection):
 
         # Initialize item IDs by key
         self._item_ids_by_key = {}
+
+        # Initialize item IDs by index
+        self._item_ids_by_index = {}
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ COLLECT
@@ -85,20 +92,33 @@ class DictCollection(Collection):
         # Get item ID
         item_id = id(item)
 
-        # Add item to items by ID
-        self._items_by_id[item_id] = item
-
         # Iterate over keys
         for key in item._meta.keys:
             # Get value
-            value = getattr(item, key, None)
+            value = (
+                tuple([getattr(item, k, None) for k in key])
+                if isinstance(key, tuple)
+                else getattr(item, key, None)
+            )
 
             # Continue if value is null
-            if value in {None, ""}:
+            if value in (None, ""):
                 continue
+
+            # Check if key already exists
+            if value in self._item_ids_by_key:
+                # Check item ID does not match the current item
+                if self._item_ids_by_key[value] != item_id:
+                    # Raise a duplicate key error
+                    raise DuplicateKeyError(
+                        f"An item with the key '{value}' already exists."
+                    )
 
             # Add item ID to item IDs by key
             self._item_ids_by_key[value] = item_id
+
+        # Add item to items by ID
+        self._items_by_id[item_id] = item
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ SLICE

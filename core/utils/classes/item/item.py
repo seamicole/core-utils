@@ -92,6 +92,40 @@ class Item(metaclass=ItemMetaclass):
         return representation
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ __SETATTR__
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        """Set Attribute Method"""
+
+        # Determine if altering an existing attribute
+        altering = hasattr(self, name)
+
+        # Call super method
+        super().__setattr__(name, value)
+
+        # Check if altering
+        if altering:
+            # Get keys altered
+            keys_altered = self._meta.keys_altered
+
+            # Iterate over keys
+            for key in self._meta.keys:
+                # Check if name relates to key
+                if (isinstance(key, str) and name == key) or (
+                    isinstance(key, tuple) and name in key
+                ):
+                    # Check if name is in keys altered
+                    if key in keys_altered:
+                        # Delete name from keys altered
+                        del keys_altered[name]
+
+                    # Otherwise record initial value
+                    else:
+                        # Add name to keys altered
+                        keys_altered[name] = value
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __STR__
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -100,19 +134,33 @@ class Item(metaclass=ItemMetaclass):
 
         # Iterate over keys
         for key in self.Meta.KEYS:
-            # Continue if item does not have key
-            if not hasattr(self, key):
-                continue
+            # Check if key is a string
+            if isinstance(key, str):
+                # Continue if item does not have key
+                if not hasattr(self, key):
+                    continue
 
-            # Get value
-            value = getattr(self, key)
+                # Get value
+                value = getattr(self, key)
 
-            # Continue if value is not null
-            if value not in (None, ""):
-                continue
+                # Continue if value is null
+                if value in (None, ""):
+                    continue
 
-            # Return the string of the value
-            return str(value)
+                # Return the string of the value
+                return str(value)
+
+            # Otherwise check if key is a tuple
+            elif isinstance(key, tuple):
+                # Get values
+                values = tuple(getattr(self, k, None) for k in key)
+
+                # Continue if any value is null
+                if any(value in (None, "") for value in values):
+                    continue
+
+                # Return the string of the values
+                return "-".join(str(value) for value in values)
 
         # Return the hex ID of the item
         return hex(id(self))
@@ -128,21 +176,30 @@ class Item(metaclass=ItemMetaclass):
         # │ CLASS ATTRIBUTES
         # └─────────────────────────────────────────────────────────────────────────────
 
+        # Initialize indexes
+        INDEXES: tuple[str | tuple[str, ...], ...] = ()
+
         # Initialize items
         ITEMS: Collection | Items | None = None
 
         # Initialize keys
-        KEYS: tuple[str, ...] = ()
+        KEYS: tuple[str | tuple[str, ...], ...] = ()
 
         # ┌─────────────────────────────────────────────────────────────────────────────
         # │ INSTANCE ATTRIBUTES
         # └─────────────────────────────────────────────────────────────────────────────
 
+        # Declare type of indexes
+        indexes: tuple[str | tuple[str, ...], ...]
+
         # Declare type of items
         items: Items | None
 
         # Declare type of keys
-        keys: tuple[str, ...]
+        keys: tuple[str | tuple[str, ...], ...]
+
+        # Declare type of keys altered
+        keys_altered: dict[str | tuple[str, ...], Any]
 
         # ┌─────────────────────────────────────────────────────────────────────────────
         # │ __INIT__
@@ -158,3 +215,9 @@ class Item(metaclass=ItemMetaclass):
 
             # Initialize and set keys
             self.keys = tuple(self.KEYS)
+
+            # Initialize and set keys altered
+            self.keys_altered = {}
+
+            # Initialize and set indexes
+            self.indexes = tuple(self.INDEXES)
