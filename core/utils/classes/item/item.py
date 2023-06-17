@@ -12,7 +12,7 @@ from typing import Any
 
 from core.utils.classes.collection.collection import Collection
 from core.utils.classes.item.items import Items
-from core.utils.exceptions import UndefinedError
+from core.utils.exceptions import InvalidKeyError, UndefinedError
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -27,19 +27,66 @@ class ItemMetaclass(type):
     # │ CLASS ATTRIBUTES
     # └─────────────────────────────────────────────────────────────────────────────────
 
+    # Declare type of Meta
+    Meta: type[Item.Meta]
+
     # Declare type of meta
     _meta: Item.Meta
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ __CALL__
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def __call__(cls, *args: Any, **kwargs: Any) -> Item:
+        """Call Method"""
+
+        # Create instance
+        instance: Item = super().__call__(*args, **kwargs)
+
+        # Initialize meta
+        instance._meta = cls.Meta()
+
+        # Return instance
+        return instance
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ __INIT__
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def __init__(
+        cls, name: str, bases: tuple[type, ...], attrs: dict[str, Any]
+    ) -> None:
+        """Init Method"""
+
+        # Call super method
+        super().__init__(name, bases, attrs)
+
+        # Ensure that keys is a tuple
+        cls.Meta.KEYS = tuple(cls.Meta.KEYS)
+
+        # Ensure that indexes is a tuple
+        cls.Meta.INDEXES = tuple(cls.Meta.INDEXES)
+
+        # Initialize items
+        cls.Meta.ITEMS = (
+            cls.Meta.ITEMS.all()
+            if isinstance(cls.Meta.ITEMS, Collection)
+            else cls.Meta.ITEMS
+        )
+
+        # Initialize meta
+        cls._meta = cls.Meta()
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ ITEMS
     # └─────────────────────────────────────────────────────────────────────────────────
 
     @property
-    def items(cls) -> Items:
+    def items(cls) -> Collection | Items:
         """Returns the items of the item's meta instance"""
 
         # Get items
-        items = cls._meta.items
+        items = cls.Meta.ITEMS
 
         # Check if items is None
         if items is None:
@@ -66,16 +113,6 @@ class Item(metaclass=ItemMetaclass):
     _meta: Item.Meta
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ INIT SUBCLASS
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    def __init_subclass__(cls, **kwargs: Any) -> None:
-        """Init Subclass Method"""
-
-        # Initialize meta
-        cls._meta = cls.Meta(ItemClass=cls)
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __REPR__
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -98,32 +135,19 @@ class Item(metaclass=ItemMetaclass):
     def __setattr__(self, name: str, value: Any) -> None:
         """Set Attribute Method"""
 
-        # Determine if altering an existing attribute
-        altering = hasattr(self, name)
+        # Iterate over keys
+        for key in self._meta.KEYS:
+            # Check if name relates to key
+            if (isinstance(key, str) and name == key) or (
+                isinstance(key, tuple) and name in key
+            ):
+                # Check if value is null
+                if value in (None, ""):
+                    # Raise a InvalidKeyError
+                    raise InvalidKeyError("A key cannot have a null value.")
 
         # Call super method
         super().__setattr__(name, value)
-
-        # Check if altering
-        if altering:
-            # Get keys altered
-            keys_altered = self._meta.keys_altered
-
-            # Iterate over keys
-            for key in self._meta.keys:
-                # Check if name relates to key
-                if (isinstance(key, str) and name == key) or (
-                    isinstance(key, tuple) and name in key
-                ):
-                    # Check if name is in keys altered
-                    if key in keys_altered:
-                        # Delete name from keys altered
-                        del keys_altered[name]
-
-                    # Otherwise record initial value
-                    else:
-                        # Add name to keys altered
-                        keys_altered[name] = value
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __STR__
@@ -166,6 +190,16 @@ class Item(metaclass=ItemMetaclass):
         return hex(id(self))
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ PUSH
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def push(self) -> None:
+        """Pushes an item to the collection"""
+
+        # Push item to items collection
+        self.__class__.items.push(self)
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ META
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -184,40 +218,3 @@ class Item(metaclass=ItemMetaclass):
 
         # Initialize keys
         KEYS: tuple[str | tuple[str, ...], ...] = ()
-
-        # ┌─────────────────────────────────────────────────────────────────────────────
-        # │ INSTANCE ATTRIBUTES
-        # └─────────────────────────────────────────────────────────────────────────────
-
-        # Declare type of indexes
-        indexes: tuple[str | tuple[str, ...], ...]
-
-        # Declare type of items
-        items: Items | None
-
-        # Declare type of keys
-        keys: tuple[str | tuple[str, ...], ...]
-
-        # Declare type of keys altered
-        keys_altered: dict[str | tuple[str, ...], Any]
-
-        # ┌─────────────────────────────────────────────────────────────────────────────
-        # │ __INIT__
-        # └─────────────────────────────────────────────────────────────────────────────
-
-        def __init__(self, ItemClass: type[Item]) -> None:
-            """Init Method"""
-
-            # Initialize and set items
-            self.items = (
-                self.ITEMS.all() if isinstance(self.ITEMS, Collection) else self.ITEMS
-            )
-
-            # Initialize and set keys
-            self.keys = tuple(self.KEYS)
-
-            # Initialize and set keys altered
-            self.keys_altered = {}
-
-            # Initialize and set indexes
-            self.indexes = tuple(self.INDEXES)

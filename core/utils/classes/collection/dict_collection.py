@@ -33,11 +33,8 @@ class DictCollection(Collection):
     # Declare type of items by ID
     _items_by_id: dict[int, Item]
 
-    # Declare type of item IDs by key
-    _item_ids_by_key: dict[Any, int]
-
-    # Declare type of item IDs by index
-    _item_ids_by_index: dict[Any, set[int]]
+    # Declare type of item IDs by key or index
+    _item_ids_by_key_or_index: dict[Any, set[int]]
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __INIT__
@@ -49,11 +46,8 @@ class DictCollection(Collection):
         # Initialize items by ID
         self._items_by_id = {}
 
-        # Initialize item IDs by key
-        self._item_ids_by_key = {}
-
-        # Initialize item IDs by index
-        self._item_ids_by_index = {}
+        # Initialize item IDs by key or index
+        self._item_ids_by_key_or_index = {}
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ COLLECT
@@ -92,8 +86,11 @@ class DictCollection(Collection):
         # Get item ID
         item_id = id(item)
 
+        # Get item IDs by key or index
+        item_ids_by_key_or_index = self._item_ids_by_key_or_index
+
         # Iterate over keys
-        for key in item._meta.keys:
+        for key in item._meta.KEYS:
             # Get value
             value = (
                 tuple([getattr(item, k, None) for k in key])
@@ -101,21 +98,17 @@ class DictCollection(Collection):
                 else getattr(item, key, None)
             )
 
-            # Continue if value is null
-            if value in (None, ""):
-                continue
-
             # Check if key already exists
-            if value in self._item_ids_by_key:
+            if value in item_ids_by_key_or_index:
                 # Check item ID does not match the current item
-                if self._item_ids_by_key[value] != item_id:
+                if item_id not in item_ids_by_key_or_index[value]:
                     # Raise a duplicate key error
                     raise DuplicateKeyError(
                         f"An item with the key '{value}' already exists."
                     )
 
-            # Add item ID to item IDs by key
-            self._item_ids_by_key[value] = item_id
+            # Add item ID to item IDs by key or index
+            self._item_ids_by_key_or_index.setdefault(value, set()).add(item_id)
 
         # Add item to items by ID
         self._items_by_id[item_id] = item
