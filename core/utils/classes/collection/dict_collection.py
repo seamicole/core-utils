@@ -89,6 +89,9 @@ class DictCollection(Collection):
         # Get item IDs by key or index
         item_ids_by_key_or_index = self._item_ids_by_key_or_index
 
+        # Initialize values
+        values = set()
+
         # Iterate over keys
         for key in item._meta.KEYS:
             # Get value
@@ -98,20 +101,50 @@ class DictCollection(Collection):
                 else getattr(item, key, None)
             )
 
-            # Check if key already exists
-            if value in item_ids_by_key_or_index:
-                # Check item ID does not match the current item
-                if item_id not in item_ids_by_key_or_index[value]:
-                    # Raise a duplicate key error
-                    raise DuplicateKeyError(
-                        f"An item with the key '{value}' already exists."
-                    )
+            # Get item IDs
+            item_ids = item_ids_by_key_or_index.get(value, set())
+
+            # Continue if item ID already exists
+            if item_id in item_ids:
+                continue
+
+            # Check if there is an existing item with the same key
+            if item_ids and item_id not in item_ids:
+                # Raise a duplicate key error
+                raise DuplicateKeyError(
+                    f"An item with the key '{value}' already exists."
+                )
 
             # Add item ID to item IDs by key or index
-            self._item_ids_by_key_or_index.setdefault(value, set()).add(item_id)
+            self._item_ids_by_key_or_index[value] = {item_id}
+
+            # Add key value to values
+            values.add(value)
+
+        # Check if there are any values
+        if values:
+            # Iterate over item IDs by key or index
+            for value in list(item_ids_by_key_or_index):
+                # Get item IDs
+                item_ids = item_ids_by_key_or_index[value]
+
+                # Continue if value in values
+                if value in values:
+                    continue
+
+                # Remove item ID from item IDs
+                item_ids.remove(item_id)
+
+                # Check if item IDs is empty
+                if not item_ids:
+                    # Remove item IDs by key or index
+                    del item_ids_by_key_or_index[value]
 
         # Add item to items by ID
         self._items_by_id[item_id] = item
+
+        # WONT WORK BECAUSE IF ONE KEY CHANGES BUT ANOTHER DOESNT,
+        # THEN THE UNCHANGED KEY WILL BE REMOVED FROM THE INDEX
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ SLICE

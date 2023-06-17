@@ -184,7 +184,7 @@ class Item(metaclass=ItemMetaclass):
                     continue
 
                 # Return the string of the values
-                return "-".join(str(value) for value in values)
+                return "(" + ", ".join(str(value) for value in values) + ")"
 
         # Return the hex ID of the item
         return hex(id(self))
