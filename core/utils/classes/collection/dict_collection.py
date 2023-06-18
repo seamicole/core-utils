@@ -33,8 +33,11 @@ class DictCollection(Collection):
     # Declare type of items by ID
     _items_by_id: dict[int, Item]
 
-    # Declare type of item IDs by key or index
-    _item_ids_by_key_or_index: dict[Any, set[int]]
+    # Declare type of item IDs by key
+    _item_ids_by_key: dict[Any, int]
+
+    # Declare type of keys by item ID
+    _keys_by_item_id: dict[int, list[Any]]
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __INIT__
@@ -46,8 +49,11 @@ class DictCollection(Collection):
         # Initialize items by ID
         self._items_by_id = {}
 
-        # Initialize item IDs by key or index
-        self._item_ids_by_key_or_index = {}
+        # Initialize item IDs by key
+        self._item_ids_by_key = {}
+
+        # Initialize keys by item ID
+        self._keys_by_item_id = {}
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ COLLECT
@@ -86,25 +92,16 @@ class DictCollection(Collection):
         # Get item ID
         item_id = id(item)
 
-        # Get item IDs by key or index
-        item_ids_by_key_or_index = self._item_ids_by_key_or_index
+        # Get keys by item ID
+        keys_by_item_id = self._keys_by_item_id
 
-        # Check if item ID already exists
-        if item_id in self._items_by_id:
-            # Iterate over values
-            for value in list(item_ids_by_key_or_index):
-                # Get item IDs
-                item_ids = item_ids_by_key_or_index[value]
+        # Get item IDs by key
+        item_ids_by_key = self._item_ids_by_key
 
-                # Check if item ID in item IDs
-                if item_id in item_ids:
-                    # Remove item ID from item IDs
-                    item_ids.remove(item_id)
-
-                    # Check if item IDs is empty
-                    if not item_ids:
-                        # Remove item IDs by key or index
-                        del item_ids_by_key_or_index[value]
+        # Iterate over values
+        for value in keys_by_item_id.pop(item_id, []):
+            # Remove item ID from item IDs by key
+            del item_ids_by_key[value]
 
         # Iterate over keys
         for key in item._meta.KEYS:
@@ -115,18 +112,18 @@ class DictCollection(Collection):
                 else getattr(item, key, None)
             )
 
-            # Get item IDs
-            item_ids = item_ids_by_key_or_index.get(value, set())
-
-            # Check if there is an existing item with the same key
-            if item_ids and item_id not in item_ids:
+            # Check if value in item IDs by key
+            if value in item_ids_by_key:
                 # Raise a duplicate key error
                 raise DuplicateKeyError(
                     f"An item with the key '{value}' already exists."
                 )
 
-            # Add item ID to item IDs by key or index
-            self._item_ids_by_key_or_index[value] = {item_id}
+            # Add item ID to item IDs by key
+            item_ids_by_key[value] = item_id
+
+            # Add value to keys by item ID
+            keys_by_item_id.setdefault(item_id, []).append(value)
 
         # Add item to items by ID
         self._items_by_id[item_id] = item
