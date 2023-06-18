@@ -110,10 +110,54 @@ class Items:
     # └─────────────────────────────────────────────────────────────────────────────────
 
     def count(self) -> int:
-        """Returns the number of items in the collection"""
+        """Returns a count of items in the collection"""
 
         # Return the number of items in the collection
         return self._collection.count(items=self)
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ FILTER
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def filter(self, **kwargs: Any) -> Items:
+        """Returns a filtered collection of items"""
+
+        # Define operators
+        operators = (
+            "equals",
+            "iequals",
+            "lt",
+            "lte",
+            "gt",
+            "gte",
+        )
+
+        # Initialize conditions
+        conditions = []
+
+        # Iterate over kwargs
+        for key, value in kwargs.items():
+            # Iterate over operators
+            for operator in operators:
+                # Get operator suffix
+                operator_suffix = "__" + operator
+
+                # Check if key ends with operator suffix
+                if key.endswith(operator_suffix):
+                    # Remove suffix from key
+                    key = key.removesuffix(operator_suffix)
+
+                    # Append condition to conditions and break
+                    conditions.append((key, operator, value))
+                    break
+
+            # Otherwise set default operator
+            else:
+                # Append condition to conditions
+                conditions.append((key, "equals", value))
+
+        # Initialize and return a filtered collection of items
+        return self._collection.filter(tuple(conditions), items=self._copy())
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ FIRST

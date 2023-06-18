@@ -65,7 +65,17 @@ class Collection(ABC):
 
     @abstractmethod
     def count(self, items: Items | None = None) -> int:
-        """Counts the number of items in the collection"""
+        """Returns a count of items in the collection"""
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ FILTER
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    @abstractmethod
+    def filter(
+        self, collection: tuple[tuple[str, str, Any], ...], items: Items | None = None
+    ) -> Items:
+        """Filters items in the collection"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ FIRST

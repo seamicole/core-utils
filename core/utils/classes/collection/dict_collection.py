@@ -94,13 +94,108 @@ class DictCollection(Collection):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     def count(self, items: Items | None = None) -> int:
-        """Counts the number of items in the collection"""
+        """Returns a count of items in the collection"""
 
         # Initialize items
         items = self.apply(items)
 
         # Return the number of items in the collection
         return sum(1 for _ in items)
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ FILTER
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def filter(
+        self, conditions: tuple[tuple[str, str, Any], ...], items: Items | None = None
+    ) -> Items:
+        """Returns a filtered collection of items"""
+
+        # Initialize items
+        items = self.apply(items)
+
+        def operation(
+            items: Generator[Item, None, None]
+        ) -> Generator[Item, None, None]:
+            """Yields items filtered from the collection"""
+
+            # Iterate over items
+            for item in items:
+                # Iterate over kwargs
+                for attr, operator, expected in conditions:
+                    # Get actual value
+                    actual = getattr(item, attr)
+
+                    # Handle case of equals
+                    if operator in ("equals", "iequals"):
+                        # Check if case-insensitive equals
+                        if (
+                            operator == "iequals"
+                            and isinstance(actual, str)
+                            and isinstance(expected, str)
+                        ):
+                            # Set actual and expected to lowercase
+                            actual = actual.lower()
+                            expected = expected.lower()
+
+                        # Break if item does not equal value
+                        if actual != expected:
+                            break
+
+                    # Otherwise handle case of less than
+                    elif operator == "lt":
+                        # Initialize try-except block
+                        try:
+                            # Break if item is not less than value
+                            if actual >= expected:
+                                break
+
+                        # Handle TypeError
+                        except TypeError:
+                            break
+
+                    # Otherwise handle case of less than or equal to
+                    elif operator == "lte":
+                        # Initialize try-except block
+                        try:
+                            # Break if item is not less than or equal to value
+                            if actual > expected:
+                                break
+
+                        # Handle TypeError
+                        except TypeError:
+                            break
+
+                    # Otherwise handle case of greater than
+                    elif operator == "gt":
+                        # Initialize try-except block
+                        try:
+                            # Break if item is not greater than value
+                            if actual <= expected:
+                                break
+
+                        # Handle TypeError
+                        except TypeError:
+                            break
+
+                    # Otherwise handle case of greater than or equal to
+                    elif operator == "gte":
+                        # Initialize try-except block
+                        try:
+                            # Break if item is not greater than or equal to value
+                            if actual < expected:
+                                break
+
+                        # Handle TypeError
+                        except TypeError:
+                            break
+
+                # Otherwise yield item
+                else:
+                    yield item
+
+        # Apply filter operation to items
+        return self.apply(items, lambda x: operation(x))
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ FIRST
