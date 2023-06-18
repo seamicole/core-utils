@@ -65,12 +65,31 @@ class DictCollection(Collection):
         # Get operations
         operations = self.apply(items)._operations
 
+        # Initialize collected items
+        collected = (i for i in self._items_by_id.values())
+
         # Iterate over operations
         for operation in operations:
             # Check if callable
             if callable(operation):
-                # Yield from operation
-                yield from operation(tuple(self._items_by_id.values()))
+                # Apply operation to collected
+                collected = operation(collected)
+
+        # Yield collected items
+        yield from collected
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ COUNT
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def count(self, items: Items | None = None) -> int:
+        """Counts the number of items in the collection"""
+
+        # Initialize items
+        items = self.apply(items)
+
+        # Return the number of items in the collection
+        return sum(1 for _ in items)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ HEAD
@@ -79,8 +98,22 @@ class DictCollection(Collection):
     def head(self, n: int, items: Items | None = None) -> Items:
         """Returns the first n items in the collection"""
 
+        def operation(
+            items: Generator[Item, None, None]
+        ) -> Generator[Item, None, None]:
+            """Yields the first n items in the collection"""
+
+            # Iterate over items
+            for i, item in enumerate(items):
+                # Check if i is greater than or equal to n
+                if i >= n:
+                    # Break
+                    break
+                # Yield item
+                yield item
+
         # Apply head operation to items
-        return self.apply(items, lambda i: i[:n])
+        return self.apply(items, lambda x: operation(x))
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ PUSH
@@ -135,8 +168,30 @@ class DictCollection(Collection):
     def slice(self, start: int, stop: int, items: Items | None = None) -> Items:
         """Returns a slice of items in the collection"""
 
+        def operation(
+            items: Generator[Item, None, None]
+        ) -> Generator[Item, None, None]:
+            """Yields a slice of items in the collection"""
+
+            # Check if either start or stop is less than 0
+            if start < 0 or stop < 0:
+                # Convert items to list and yield slice
+                yield from list(items)[start:stop]
+
+            # Iterate over items
+            for i, item in enumerate(items):
+                # Check if i is greater than or equal to stop
+                if i >= stop:
+                    # Break
+                    break
+
+                # Check if i is greater than or equal to start
+                if i >= start:
+                    # Yield item
+                    yield item
+
         # Apply slice operation to items
-        return self.apply(items, lambda x: x[start:stop])
+        return self.apply(items, lambda x: operation(x))
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ TAIL
@@ -145,5 +200,17 @@ class DictCollection(Collection):
     def tail(self, n: int, items: Items | None = None) -> Items:
         """Returns the last n items in the collection"""
 
+        def operation(
+            items: Generator[Item, None, None]
+        ) -> Generator[Item, None, None]:
+            """Yields the last n items in the collection"""
+
+            # Iterate over items
+            for i, item in enumerate(items):
+                # Check if i is greater than or equal to n
+                if i >= n:
+                    # Yield item
+                    yield item
+
         # Apply tail operation to items
-        return self.apply(items, lambda x: x[-n:])
+        return self.apply(items, lambda x: operation(x))

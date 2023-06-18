@@ -46,7 +46,7 @@ class Items:
         # Set operations
         self._operations = operations
 
-    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # ┌────────────────────────────────────────────────────────────────────────────────
     # │ __ITER__
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -57,6 +57,45 @@ class Items:
         yield from self._collection.collect(items=self)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ __REPR__
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def __repr__(self) -> str:
+        """Representation Method"""
+
+        # Initialize representation to class name
+        representation = self.__class__.__name__
+
+        # Get item count
+        count = self.count()
+
+        # Add count to representation
+        representation += f": {count}"
+
+        # Define n
+        n = 20
+
+        # Get head
+        head = self.head(n=n)
+
+        # Get items
+        items = [item.__repr__() for item in head]
+
+        # Check if there are more than n items total
+        if count > n:
+            # Add truncation message to items list
+            items.append("...(remaining items truncated)... ")
+
+        # Add items to representation
+        representation = f"{representation} {'[' + ', '.join(items) + ']'}"
+
+        # Add angle brackets to the representation
+        representation = f"<{representation}>"
+
+        # Return representation
+        return representation
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ _COPY
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -65,6 +104,16 @@ class Items:
 
         # Initialize and return a copy of the current collection
         return Items(collection=self._collection, operations=self._operations)
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ COUNT
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def count(self) -> int:
+        """Returns the number of items in the collection"""
+
+        # Return the number of items in the collection
+        return self._collection.count(items=self)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ HEAD
