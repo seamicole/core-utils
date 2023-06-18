@@ -34,22 +34,6 @@ class ItemMetaclass(type):
     _meta: Item.Meta
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ __CALL__
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    def __call__(cls, *args: Any, **kwargs: Any) -> Item:
-        """Call Method"""
-
-        # Create instance
-        instance: Item = super().__call__(*args, **kwargs)
-
-        # Initialize meta
-        instance._meta = cls.Meta()
-
-        # Return instance
-        return instance
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __INIT__
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -61,21 +45,17 @@ class ItemMetaclass(type):
         # Call super method
         super().__init__(name, bases, attrs)
 
+        # Get Meta
+        Meta = cls.Meta
+
         # Ensure that keys is a tuple
-        cls.Meta.KEYS = tuple(cls.Meta.KEYS)
+        Meta.KEYS = tuple(Meta.KEYS)
 
         # Ensure that indexes is a tuple
-        cls.Meta.INDEXES = tuple(cls.Meta.INDEXES)
-
-        # Initialize items
-        cls.Meta.ITEMS = (
-            cls.Meta.ITEMS.all()
-            if isinstance(cls.Meta.ITEMS, Collection)
-            else cls.Meta.ITEMS
-        )
+        Meta.INDEXES = tuple(Meta.INDEXES)
 
         # Initialize meta
-        cls._meta = cls.Meta()
+        cls._meta = Meta()
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ ITEMS
@@ -85,16 +65,8 @@ class ItemMetaclass(type):
     def items(cls) -> Collection | Items:
         """Returns the items of the item's meta instance"""
 
-        # Get items
-        items = cls.Meta.ITEMS
-
-        # Check if items is None
-        if items is None:
-            # Raise UndefinedError
-            raise UndefinedError(f"{cls.__name__}.Meta.ITEMS is undefined")
-
-        # Return items
-        return items
+        # Return meta items
+        return cls._meta.items
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -136,7 +108,7 @@ class Item(metaclass=ItemMetaclass):
         """Set Attribute Method"""
 
         # Iterate over keys
-        for key in self._meta.KEYS:
+        for key in self.__class__._meta.KEYS:
             # Check if name relates to key
             if (isinstance(key, str) and name == key) or (
                 isinstance(key, tuple) and name in key
@@ -157,7 +129,7 @@ class Item(metaclass=ItemMetaclass):
         """String Method"""
 
         # Iterate over keys
-        for key in self.Meta.KEYS:
+        for key in self.__class__._meta.KEYS:
             # Check if key is a string
             if isinstance(key, str):
                 # Continue if item does not have key
@@ -218,3 +190,43 @@ class Item(metaclass=ItemMetaclass):
 
         # Initialize keys
         KEYS: tuple[str | tuple[str, ...], ...] = ()
+
+        # ┌─────────────────────────────────────────────────────────────────────────────
+        # │ INSTANCE ATTRIBUTES
+        # └─────────────────────────────────────────────────────────────────────────────
+
+        # Declare type of _items
+        _items: Items | None = None
+
+        # ┌─────────────────────────────────────────────────────────────────────────────
+        # │ __INIT__
+        # └─────────────────────────────────────────────────────────────────────────────
+
+        def __init__(self) -> None:
+            """Init Method"""
+
+            # Initialize items
+            self._items = (
+                self.ITEMS.all() if isinstance(self.ITEMS, Collection) else self.ITEMS
+            )
+
+        # ┌─────────────────────────────────────────────────────────────────────────────
+        # │ ITEMS
+        # └─────────────────────────────────────────────────────────────────────────────
+
+        @property
+        def items(self) -> Items:
+            """Returns the items of the meta instance"""
+
+            # Get items
+            items = self._items
+
+            # Check if items is None
+            if items is None:
+                # Raise UndefinedError
+                raise UndefinedError(
+                    f"{self.__class__.__name__}.Meta.ITEMS is undefined."
+                )
+
+            # Return items
+            return items
