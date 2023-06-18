@@ -68,12 +68,28 @@ class Collection(ABC):
         """Counts the number of items in the collection"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ FIRST
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    @abstractmethod
+    def first(self, items: Items | None = None) -> Item | None:
+        """Returns the first item in the collection"""
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ HEAD
     # └─────────────────────────────────────────────────────────────────────────────────
 
     @abstractmethod
     def head(self, n: int, items: Items | None = None) -> Items:
         """Returns the first n items in the collection"""
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ LAST
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    @abstractmethod
+    def last(self, items: Items | None = None) -> Item | None:
+        """Returns the last item in the collection"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ PUSH

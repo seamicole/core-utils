@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+from collections import deque
 from copy import deepcopy
 from typing import Any, Generator, TYPE_CHECKING
 
@@ -73,7 +74,7 @@ class DictCollection(Collection):
         operations = self.apply(items)._operations
 
         # Initialize collected items
-        collected = (i for i in self._items_by_id.values())
+        collected = iter(self._items_by_id.values())
 
         # Iterate over operations
         for operation in operations:
@@ -82,8 +83,10 @@ class DictCollection(Collection):
                 # Apply operation to collected
                 collected = operation(collected)
 
-        # Yield collected items
-        yield from (deepcopy(i) for i in collected)
+        # Iterate over collected items
+        for item in collected:
+            # Deepcopy and yield item
+            yield deepcopy(item)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ COUNT
@@ -97,6 +100,19 @@ class DictCollection(Collection):
 
         # Return the number of items in the collection
         return sum(1 for _ in items)
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ FIRST
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def first(self, items: Items | None = None) -> Item | None:
+        """Returns the first item in the collection"""
+
+        # Initialize items
+        items = self.apply(items)
+
+        # Return the first item in the collection
+        return next(iter(items), None)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ HEAD
@@ -134,6 +150,22 @@ class DictCollection(Collection):
 
         # Return item ID
         return self._item_id
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ LAST
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def last(self, items: Items | None = None) -> Item | None:
+        """Returns the last item in the collection"""
+
+        # Initialize items
+        items = self.apply(items)
+
+        # Initialize window
+        window = deque(items, maxlen=1)
+
+        # Return the last item in the collection
+        return window.pop() if window else None
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ PUSH
@@ -240,8 +272,18 @@ class DictCollection(Collection):
         ) -> Generator[Item, None, None]:
             """Yields the last n items in the collection"""
 
-            # Convert items to list and yield slice
-            yield from list(items)[-n:]
+            # Initialize window
+            window: deque[Item] = deque(maxlen=n)
+
+            # Iterate over items
+            for item in items:
+                # Append item to window
+                window.append(item)
+
+            # Iterate over window
+            for item in window:
+                # Yield item
+                yield item
 
         # Apply tail operation to items
         return self.apply(items, lambda x: operation(x))

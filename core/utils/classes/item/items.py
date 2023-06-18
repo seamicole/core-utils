@@ -116,6 +116,16 @@ class Items:
         return self._collection.count(items=self)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ FIRST
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def first(self) -> Item | None:
+        """Returns the first item in the collection"""
+
+        # Return the first item in the collection
+        return self._collection.first(items=self)
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ HEAD
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -124,6 +134,16 @@ class Items:
 
         # Initialize and return a subset of items
         return self._collection.head(n=n, items=self._copy())
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ LAST
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def last(self) -> Item | None:
+        """Returns the last item in the collection"""
+
+        # Return the last item in the collection
+        return self._collection.last(items=self)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ PUSH
