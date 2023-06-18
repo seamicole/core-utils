@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import Any, Generator, TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -27,8 +28,11 @@ class DictCollection(Collection):
     """A utility class that represents a dictionary collection of items"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ CLASS ATTRIBUTES
+    # │ INSTANCE ATTRIBUTES
     # └─────────────────────────────────────────────────────────────────────────────────
+
+    # Initialize item ID
+    _item_id: int
 
     # Declare type of items by ID
     _items_by_id: dict[int, Item]
@@ -45,6 +49,9 @@ class DictCollection(Collection):
 
     def __init__(self) -> None:
         """Init Method"""
+
+        # Initialize item ID
+        self._item_id = 0
 
         # Initialize items by ID
         self._items_by_id = {}
@@ -76,7 +83,7 @@ class DictCollection(Collection):
                 collected = operation(collected)
 
         # Yield collected items
-        yield from collected
+        yield from (deepcopy(i) for i in collected)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ COUNT
@@ -116,6 +123,19 @@ class DictCollection(Collection):
         return self.apply(items, lambda x: operation(x))
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ ISSUE ITEM ID
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def issue_item_id(self) -> int:
+        """Issues a new item ID"""
+
+        # Increment item ID
+        self._item_id += 1
+
+        # Return item ID
+        return self._item_id
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ PUSH
     # └─────────────────────────────────────────────────────────────────────────────────
 
@@ -123,7 +143,11 @@ class DictCollection(Collection):
         """Pushes an item to the collection"""
 
         # Get item ID
-        item_id = id(item)
+        item_id = (
+            int(item._imeta.item_id)
+            if item._imeta.item_id is not None
+            else self.issue_item_id()
+        )
 
         # Get keys by item ID
         keys_by_item_id = self._keys_by_item_id
@@ -136,8 +160,11 @@ class DictCollection(Collection):
             # Remove item ID from item IDs by key
             del item_ids_by_key[value]
 
+        # Initialize values
+        values = []
+
         # Iterate over keys
-        for key in item._meta.KEYS:
+        for key in item._cmeta.KEYS:
             # Get value
             value = (
                 tuple([getattr(item, k, None) for k in key])
@@ -152,14 +179,22 @@ class DictCollection(Collection):
                     f"An item with the key '{value}' already exists."
                 )
 
+            # Append value to values
+            values.append(value)
+
+        # Iterate over values
+        for value in values:
             # Add item ID to item IDs by key
             item_ids_by_key[value] = item_id
 
             # Add value to keys by item ID
             keys_by_item_id.setdefault(item_id, []).append(value)
 
-        # Add item to items by ID
-        self._items_by_id[item_id] = item
+        # Update item ID
+        item._imeta.item_id = str(item_id)
+
+        # Deepcopy and add item to items by ID
+        self._items_by_id[item_id] = deepcopy(item)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ SLICE
@@ -205,12 +240,8 @@ class DictCollection(Collection):
         ) -> Generator[Item, None, None]:
             """Yields the last n items in the collection"""
 
-            # Iterate over items
-            for i, item in enumerate(items):
-                # Check if i is greater than or equal to n
-                if i >= n:
-                    # Yield item
-                    yield item
+            # Convert items to list and yield slice
+            yield from list(items)[-n:]
 
         # Apply tail operation to items
         return self.apply(items, lambda x: operation(x))

@@ -30,8 +30,34 @@ class ItemMetaclass(type):
     # Declare type of Meta
     Meta: type[Item.Meta]
 
-    # Declare type of meta
-    _meta: Item.Meta
+    # Declare type of InstanceMeta
+    InstanceMeta: type[Item.InstanceMeta]
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ INSTANCE ATTRIBUTES
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    # Declare type of class meta
+    _cmeta: Item.Meta
+
+    # Declare type of instance meta
+    _imeta: Item.InstanceMeta
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ __CALL__
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def __call__(cls, *args: Any, **kwargs: Any) -> Item:
+        """Call Method"""
+
+        # Create instance
+        instance: Item = super().__call__(*args, **kwargs)
+
+        # Initialize meta
+        instance._imeta = cls.InstanceMeta()
+
+        # Return instance
+        return instance
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __INIT__
@@ -55,7 +81,7 @@ class ItemMetaclass(type):
         Meta.INDEXES = tuple(Meta.INDEXES)
 
         # Initialize meta
-        cls._meta = Meta()
+        cls._cmeta = Meta()
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ ITEMS
@@ -66,7 +92,7 @@ class ItemMetaclass(type):
         """Returns the items of the item's meta instance"""
 
         # Return meta items
-        return cls._meta.items
+        return cls._cmeta.items
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -81,8 +107,11 @@ class Item(metaclass=ItemMetaclass):
     # │ INSTANCE ATTRIBUTES
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    # Declare type of meta
-    _meta: Item.Meta
+    # Declare type of class meta
+    _cmeta: Item.Meta
+
+    # Declare type of instance meta
+    _imeta: Item.InstanceMeta
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __REPR__
@@ -108,7 +137,7 @@ class Item(metaclass=ItemMetaclass):
         """Set Attribute Method"""
 
         # Iterate over keys
-        for key in self.__class__._meta.KEYS:
+        for key in self._cmeta.KEYS:
             # Check if name relates to key
             if (isinstance(key, str) and name == key) or (
                 isinstance(key, tuple) and name in key
@@ -129,7 +158,7 @@ class Item(metaclass=ItemMetaclass):
         """String Method"""
 
         # Iterate over keys
-        for key in self.__class__._meta.KEYS:
+        for key in self._cmeta.KEYS:
             # Check if key is a string
             if isinstance(key, str):
                 # Continue if item does not have key
@@ -230,3 +259,27 @@ class Item(metaclass=ItemMetaclass):
 
             # Return items
             return items
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ INSTANCE META
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    class InstanceMeta:
+        """Instance Meta Class"""
+
+        # ┌─────────────────────────────────────────────────────────────────────────────
+        # │ INSTANCE ATTRIBUTES
+        # └─────────────────────────────────────────────────────────────────────────────
+
+        # Declare type of item ID
+        item_id: str | None
+
+        # ┌─────────────────────────────────────────────────────────────────────────────
+        # │ __INIT__
+        # └─────────────────────────────────────────────────────────────────────────────
+
+        def __init__(self) -> None:
+            """Init Method"""
+
+            # Initialize item ID
+            self.item_id = None
