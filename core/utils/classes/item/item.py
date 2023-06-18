@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -271,8 +272,11 @@ class Item(metaclass=ItemMetaclass):
         # │ INSTANCE ATTRIBUTES
         # └─────────────────────────────────────────────────────────────────────────────
 
-        # Declare type of item ID
-        item_id: str | None
+        # Declare type of ID
+        id: str | None
+
+        # Declare type of pushed at
+        pushed_at: datetime | None
 
         # ┌─────────────────────────────────────────────────────────────────────────────
         # │ __INIT__
@@ -281,5 +285,8 @@ class Item(metaclass=ItemMetaclass):
         def __init__(self) -> None:
             """Init Method"""
 
-            # Initialize item ID
-            self.item_id = None
+            # Initialize ID
+            self.id = None
+
+            # Initialize pushed at
+            self.pushed_at = None

@@ -14,6 +14,7 @@ from typing import Any, Generator, TYPE_CHECKING
 
 from core.utils.classes.collection.collection import Collection
 from core.utils.exceptions import DuplicateKeyError
+from core.utils.functions.datetime import utc_now
 
 if TYPE_CHECKING:
     from core.utils.classes.item.item import Item
@@ -176,9 +177,7 @@ class DictCollection(Collection):
 
         # Get item ID
         item_id = (
-            int(item._imeta.item_id)
-            if item._imeta.item_id is not None
-            else self.issue_item_id()
+            int(item._imeta.id) if item._imeta.id is not None else self.issue_item_id()
         )
 
         # Get keys by item ID
@@ -223,10 +222,13 @@ class DictCollection(Collection):
             keys_by_item_id.setdefault(item_id, []).append(value)
 
         # Update item ID
-        item._imeta.item_id = str(item_id)
+        item._imeta.id = str(item_id)
 
         # Deepcopy and add item to items by ID
         self._items_by_id[item_id] = deepcopy(item)
+
+        # Update pushed at timestamp
+        self._pushed_at = utc_now()
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ SLICE
