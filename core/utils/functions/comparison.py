@@ -6,11 +6,11 @@ from typing import Any
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
-# │ EVALUATE
+# │ COMPARE VALUES
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-def evaluate(left: Any, right: Any, operator: str) -> bool | None:
+def compare_values(left: Any, right: Any, operator: str) -> bool | None:
     """Returns a boolean comparison of two values based on an operator"""
 
     # Initialize try-except block

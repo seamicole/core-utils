@@ -15,7 +15,7 @@ from typing import Any, Generator, TYPE_CHECKING
 from core.utils.classes.collection.collection import Collection
 from core.utils.exceptions import DuplicateKeyError
 from core.utils.functions.datetime import utc_now
-from core.utils.functions.comparison import evaluate
+from core.utils.functions.comparison import compare_values
 
 if TYPE_CHECKING:
     from core.utils.classes.item.item import Item
@@ -146,7 +146,9 @@ class DictCollection(Collection):
                     # Otherwise handle case of less than
                     elif operator in ("lt", "lte", "gt", "gte"):
                         # Break if item is not less than value
-                        if not evaluate(left=actual, right=expected, operator=operator):
+                        if not compare_values(
+                            left=actual, right=expected, operator=operator
+                        ):
                             break
 
                 # Otherwise yield item
