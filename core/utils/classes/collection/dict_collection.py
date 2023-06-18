@@ -15,6 +15,7 @@ from typing import Any, Generator, TYPE_CHECKING
 from core.utils.classes.collection.collection import Collection
 from core.utils.exceptions import DuplicateKeyError
 from core.utils.functions.datetime import utc_now
+from core.utils.functions.comparison import evaluate
 
 if TYPE_CHECKING:
     from core.utils.classes.item.item import Item
@@ -143,51 +144,9 @@ class DictCollection(Collection):
                             break
 
                     # Otherwise handle case of less than
-                    elif operator == "lt":
-                        # Initialize try-except block
-                        try:
-                            # Break if item is not less than value
-                            if actual >= expected:
-                                break
-
-                        # Handle TypeError
-                        except TypeError:
-                            break
-
-                    # Otherwise handle case of less than or equal to
-                    elif operator == "lte":
-                        # Initialize try-except block
-                        try:
-                            # Break if item is not less than or equal to value
-                            if actual > expected:
-                                break
-
-                        # Handle TypeError
-                        except TypeError:
-                            break
-
-                    # Otherwise handle case of greater than
-                    elif operator == "gt":
-                        # Initialize try-except block
-                        try:
-                            # Break if item is not greater than value
-                            if actual <= expected:
-                                break
-
-                        # Handle TypeError
-                        except TypeError:
-                            break
-
-                    # Otherwise handle case of greater than or equal to
-                    elif operator == "gte":
-                        # Initialize try-except block
-                        try:
-                            # Break if item is not greater than or equal to value
-                            if actual < expected:
-                                break
-
-                        # Handle TypeError
-                        except TypeError:
+                    elif operator in ("lt", "lte", "gt", "gte"):
+                        # Break if item is not less than value
+                        if not evaluate(left=actual, right=expected, operator=operator):
                             break
 
                 # Otherwise yield item
