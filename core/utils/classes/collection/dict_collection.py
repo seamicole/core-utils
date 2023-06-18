@@ -13,7 +13,7 @@ from typing import Any, Generator, TYPE_CHECKING
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.utils.classes.collection.collection import Collection
-from core.utils.exceptions import DuplicateKeyError
+from core.utils.exceptions import DoesNotExistError, DuplicateKeyError
 from core.utils.functions.datetime import utc_now
 from core.utils.functions.comparison import compare_values
 
@@ -207,6 +207,27 @@ class DictCollection(Collection):
 
         # Return item ID
         return self._item_id
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ KEY
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def key(self, key: Any, items: Items | None = None) -> Item:
+        """Returns an item by key lookup"""
+
+        # Check if key is not in item IDs by key
+        if key not in self._item_ids_by_key:
+            # Raise DoesNotExistError
+            raise DoesNotExistError(f"An item with the key '{key}' does not exist.")
+
+        # Get item ID
+        item_id = self._item_ids_by_key[key]
+
+        # Get item
+        item = self._items_by_id[item_id]
+
+        # Return item
+        return deepcopy(item)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ LAST
