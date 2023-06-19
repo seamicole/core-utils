@@ -103,6 +103,11 @@ class DictCollection(Collection):
         # Initialize items
         items = self.apply(items)
 
+        # Check if there are no operations
+        if not items._operations:
+            # Return the number of items in the collection
+            return len(self._items_by_id)
+
         # Return the number of items in the collection
         return sum(1 for _ in items)
 
