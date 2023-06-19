@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from collections import deque
 from copy import deepcopy
-from typing import Any, Generator, TYPE_CHECKING
+from typing import Any, Generator, Iterable, TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
@@ -68,14 +68,18 @@ class DictCollection(Collection):
     # │ COLLECT
     # └─────────────────────────────────────────────────────────────────────────────────
 
-    def collect(self, items: Items | None = None) -> Generator[Item, None, None]:
+    def collect(
+        self,
+        items: Items | None = None,
+        subset: Iterable[Item] | None = None,
+    ) -> Generator[Item, None, None]:
         """Yields items in the collection"""
 
         # Get operations
         operations = self.apply(items)._operations
 
         # Initialize collected items
-        collected = iter(self._items_by_id.values())
+        collected = subset if subset is not None else iter(self._items_by_id.values())
 
         # Iterate over operations
         for operation in operations:
@@ -214,10 +218,13 @@ class DictCollection(Collection):
     def key(self, key: Any, items: Items | None = None) -> Item:
         """Returns an item by key lookup"""
 
+        # Define does not exist error message
+        does_not_exist_error_message = f"An item with the key '{key}' does not exist"
+
         # Check if key is not in item IDs by key
         if key not in self._item_ids_by_key:
             # Raise DoesNotExistError
-            raise DoesNotExistError(f"An item with the key '{key}' does not exist.")
+            raise DoesNotExistError(does_not_exist_error_message + ".")
 
         # Get item ID
         item_id = self._item_ids_by_key[key]
@@ -225,8 +232,19 @@ class DictCollection(Collection):
         # Get item
         item = self._items_by_id[item_id]
 
+        # Collect subset
+        subset = list(self.collect(items=items, subset=[item]))
+
+        # Check if subset is null
+        if not subset:
+            # Raise DoesNotExistError
+            raise DoesNotExistError(does_not_exist_error_message + " in this subset.")
+
+        # Unpack subset
+        [item] = subset
+
         # Return item
-        return deepcopy(item)
+        return item
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ LAST

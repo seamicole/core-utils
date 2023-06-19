@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Generator, TYPE_CHECKING
+from typing import Any, Generator, Iterable, TYPE_CHECKING
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ PROJECT IMPORTS
@@ -56,7 +56,11 @@ class Collection(ABC):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     @abstractmethod
-    def collect(self, items: Items | None = None) -> Generator[Item, None, None]:
+    def collect(
+        self,
+        items: Items | None = None,
+        subset: Iterable[Item] | None = None,
+    ) -> Generator[Item, None, None]:
         """Yields items in the collection"""
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
