@@ -10,6 +10,8 @@ from typing import Any, Iterator, TYPE_CHECKING
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
+from core.utils.functions.datetime import utc_now
+
 if TYPE_CHECKING:
     from core.utils.classes.collection.collection import Collection
     from core.utils.classes.item.item import Item
@@ -208,6 +210,9 @@ class Items:
 
         # Push item to collection
         self._collection.push(item=item)
+
+        # Update pushed at timestamp
+        item._imeta.pushed_at = utc_now()
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ SLICE

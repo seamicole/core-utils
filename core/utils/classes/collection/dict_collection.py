@@ -14,7 +14,6 @@ from typing import Any, Generator, TYPE_CHECKING
 
 from core.utils.classes.collection.collection import Collection
 from core.utils.exceptions import DoesNotExistError, DuplicateKeyError
-from core.utils.functions.datetime import utc_now
 from core.utils.functions.comparison import compare_values
 
 if TYPE_CHECKING:
@@ -303,9 +302,6 @@ class DictCollection(Collection):
 
         # Deepcopy and add item to items by ID
         self._items_by_id[item_id] = deepcopy(item)
-
-        # Update pushed at timestamp
-        self._pushed_at = utc_now()
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ SLICE
