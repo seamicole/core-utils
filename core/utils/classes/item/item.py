@@ -13,7 +13,7 @@ from typing import Any
 
 from core.utils.classes.collection.collection import Collection
 from core.utils.classes.item.items import Items
-from core.utils.exceptions import InvalidKeyError, UndefinedError
+from core.utils.exceptions import UndefinedError
 
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
@@ -129,27 +129,6 @@ class Item(metaclass=ItemMetaclass):
 
         # Return representation
         return representation
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ __SETATTR__
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    def __setattr__(self, name: str, value: Any) -> None:
-        """Set Attribute Method"""
-
-        # Iterate over keys
-        for key in self._cmeta.KEYS:
-            # Check if name relates to key
-            if (isinstance(key, str) and name == key) or (
-                isinstance(key, tuple) and name in key
-            ):
-                # Check if value is null
-                if value in (None, ""):
-                    # Raise a InvalidKeyError
-                    raise InvalidKeyError("A key cannot have a null value.")
-
-        # Call super method
-        super().__setattr__(name, value)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __STR__
