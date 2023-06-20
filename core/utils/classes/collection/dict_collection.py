@@ -72,11 +72,15 @@ class DictCollection(Collection):
         self,
         items: Items | None = None,
         subset: Iterable[Item] | None = None,
+        quick: bool = False,
     ) -> Generator[Item, None, None]:
         """Yields items in the collection"""
 
+        # Initialize items
+        items = self.apply(items)
+
         # Get operations
-        operations = self.apply(items)._operations
+        operations = items._operations
 
         # Initialize collected items
         collected = subset if subset is not None else iter(self._items_by_id.values())
@@ -91,7 +95,7 @@ class DictCollection(Collection):
         # Iterate over collected items
         for item in collected:
             # Deepcopy and yield item
-            yield deepcopy(item)
+            yield item if quick else deepcopy(item)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ COUNT
@@ -109,7 +113,7 @@ class DictCollection(Collection):
             return len(self._items_by_id)
 
         # Return the number of items in the collection
-        return sum(1 for _ in items)
+        return sum(1 for _ in items._collect(quick=True))
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ FILTER

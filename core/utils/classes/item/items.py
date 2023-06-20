@@ -56,7 +56,7 @@ class Items:
         """Iter Method"""
 
         # Yield from collection
-        yield from self._collection.collect(items=self)
+        yield from self._collect()
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ __REPR__
@@ -81,7 +81,7 @@ class Items:
         head = self.head(n=n)
 
         # Get items
-        items = [item.__repr__() for item in head]
+        items = [item.__repr__() for item in head._collect(quick=True)]
 
         # Check if there are more than n items total
         if count > n:
@@ -96,6 +96,16 @@ class Items:
 
         # Return representation
         return representation
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ _COLLECT
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def _collect(self, quick: bool = False) -> Iterator[Item]:
+        """Returns an iterator of items"""
+
+        # Yield from collection
+        yield from self._collection.collect(items=self, quick=quick)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ _COPY

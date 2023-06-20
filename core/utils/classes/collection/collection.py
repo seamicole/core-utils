@@ -60,6 +60,7 @@ class Collection(ABC):
         self,
         items: Items | None = None,
         subset: Iterable[Item] | None = None,
+        quick: bool = False,
     ) -> Generator[Item, None, None]:
         """Yields items in the collection"""
 
