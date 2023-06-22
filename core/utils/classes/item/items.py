@@ -10,6 +10,7 @@ from typing import Any, Iterator, TYPE_CHECKING
 # │ PROJECT IMPORTS
 # └─────────────────────────────────────────────────────────────────────────────────────
 
+from core.utils.enums.operator import Operator
 from core.utils.functions.datetime import utc_now
 
 if TYPE_CHECKING:
@@ -143,14 +144,7 @@ class Items:
         """Returns a filtered collection of items"""
 
         # Define operators
-        operators = (
-            "equals",
-            "iequals",
-            "lt",
-            "lte",
-            "gt",
-            "gte",
-        )
+        operators = {o.value: o for o in Operator}
 
         # Initialize conditions
         conditions = []
@@ -169,13 +163,13 @@ class Items:
                 key = key.removesuffix(f"__{operator}")
 
                 # Append condition to conditions and break
-                conditions.append((key, operator, value))
+                conditions.append((key, operators[operator], value))
                 break
 
             # Otherwise set default operator
             else:
                 # Append condition to conditions
-                conditions.append((key, "equals", value))
+                conditions.append((key, Operator.EQUALS, value))
 
         # Initialize and return a filtered collection of items
         return self._collection.filter(tuple(conditions), items=self)

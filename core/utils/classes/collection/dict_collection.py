@@ -13,6 +13,7 @@ from typing import Any, Generator, Iterable, TYPE_CHECKING
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.utils.classes.collection.collection import Collection
+from core.utils.enums.operator import Operator
 from core.utils.exceptions import DoesNotExistError, DuplicateKeyError
 from core.utils.functions.comparison import compare_values
 
@@ -63,6 +64,19 @@ class DictCollection(Collection):
 
         # Initialize keys by item ID
         self._keys_by_item_id = {}
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ _ISSUE ITEM ID
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def _issue_item_id(self) -> int:
+        """Issues a new item ID"""
+
+        # Increment item ID
+        self._item_id += 1
+
+        # Return item ID
+        return self._item_id
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ COLLECT
@@ -120,7 +134,9 @@ class DictCollection(Collection):
     # └─────────────────────────────────────────────────────────────────────────────────
 
     def filter(
-        self, conditions: tuple[tuple[str, str, Any], ...], items: Items | None = None
+        self,
+        conditions: tuple[tuple[str, Operator, Any], ...],
+        items: Items | None = None,
     ) -> Items:
         """Returns a filtered collection of items"""
 
@@ -140,10 +156,10 @@ class DictCollection(Collection):
                     actual = getattr(item, attr)
 
                     # Handle case of equals
-                    if operator in ("equals", "iequals"):
+                    if operator in (Operator.EQUALS, Operator.IEQUALS):
                         # Check if case-insensitive equals
                         if (
-                            operator == "iequals"
+                            operator == Operator.IEQUALS
                             and isinstance(actual, str)
                             and isinstance(expected, str)
                         ):
@@ -156,8 +172,13 @@ class DictCollection(Collection):
                             break
 
                     # Otherwise handle case of less than
-                    elif operator in ("lt", "lte", "gt", "gte"):
-                        # Break if item is not less than value
+                    elif operator in (
+                        Operator.LT,
+                        Operator.LTE,
+                        Operator.GT,
+                        Operator.GTE,
+                    ):
+                        # Break if item comparison evaluates to False
                         if not compare_values(
                             left=actual, right=expected, operator=operator
                         ):
@@ -206,19 +227,6 @@ class DictCollection(Collection):
 
         # Apply head operation to items
         return self.apply(items, lambda x: operation(x))
-
-    # ┌─────────────────────────────────────────────────────────────────────────────────
-    # │ ISSUE ITEM ID
-    # └─────────────────────────────────────────────────────────────────────────────────
-
-    def issue_item_id(self) -> int:
-        """Issues a new item ID"""
-
-        # Increment item ID
-        self._item_id += 1
-
-        # Return item ID
-        return self._item_id
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ KEY
@@ -280,7 +288,7 @@ class DictCollection(Collection):
 
         # Get item ID
         item_id = (
-            int(item._imeta.id) if item._imeta.id is not None else self.issue_item_id()
+            int(item._imeta.id) if item._imeta.id is not None else self._issue_item_id()
         )
 
         # Get keys by item ID

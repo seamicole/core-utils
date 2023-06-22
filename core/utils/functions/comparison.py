@@ -4,35 +4,41 @@
 
 from typing import Any
 
+# ┌─────────────────────────────────────────────────────────────────────────────────────
+# │ PROJECT IMPORTS
+# └─────────────────────────────────────────────────────────────────────────────────────
+
+from core.utils.enums.operator import Operator
+
 
 # ┌─────────────────────────────────────────────────────────────────────────────────────
 # │ COMPARE VALUES
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 
-def compare_values(left: Any, right: Any, operator: str) -> bool | None:
+def compare_values(left: Any, right: Any, operator: Operator) -> bool | None:
     """Returns a boolean comparison of two values based on an operator"""
 
     # Initialize try-except block
     try:
         # Handle case of equal to
-        if operator in ("eq", "equals"):
+        if operator == Operator.EQUALS:
             return left == right  # type: ignore
 
         # Otherwise, handle case of less than
-        if operator == "lt":
+        if operator == Operator.LT:
             return left < right  # type: ignore
 
         # Otherwise handle case of less than or equal to
-        elif operator in ("le", "lte"):
+        elif operator == Operator.LTE:
             return left <= right  # type: ignore
 
         # Otherwise handle case of greater than
-        elif operator == "gt":
+        elif operator == Operator.GT:
             return left > right  # type: ignore
 
         # Otherwise handle case of greater than or equal to
-        elif operator in ("ge", "gte"):
+        elif operator == Operator.GTE:
             return left >= right  # type: ignore
 
     # Handle TypeError
