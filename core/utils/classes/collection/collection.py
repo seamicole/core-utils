@@ -43,7 +43,7 @@ class Collection(ABC):
         """Applies a series of operations to a collection of items"""
 
         # Initialize items
-        items = items if items is not None else self.all()
+        items = items._copy() if items is not None else self.all()
 
         # Append head operation to operations
         items._operations += operations

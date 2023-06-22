@@ -104,8 +104,16 @@ class Items:
     def _collect(self, quick: bool = False) -> Iterator[Item]:
         """Returns an iterator of items"""
 
-        # Yield from collection
-        yield from self._collection.collect(items=self, quick=quick)
+        # Get pulled at
+        pulled_at = utc_now()
+
+        # Iterate over collection
+        for item in self._collection.collect(items=self, quick=quick):
+            # Set pulled at
+            item._imeta.pulled_at = pulled_at
+
+            # Yield item
+            yield item
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ _COPY
@@ -169,7 +177,7 @@ class Items:
                 conditions.append((key, "equals", value))
 
         # Initialize and return a filtered collection of items
-        return self._collection.filter(tuple(conditions), items=self._copy())
+        return self._collection.filter(tuple(conditions), items=self)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ FIRST
@@ -189,7 +197,7 @@ class Items:
         """Returns the first n items in the collection"""
 
         # Initialize and return a subset of items
-        return self._collection.head(n=n, items=self._copy())
+        return self._collection.head(n=n, items=self)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ KEY
@@ -232,7 +240,7 @@ class Items:
         """Returns a slice of items in the collection"""
 
         # Initialize and return a subset of items
-        return self._collection.slice(start=start, stop=stop, items=self._copy())
+        return self._collection.slice(start=start, stop=stop, items=self)
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ TAIL
@@ -242,4 +250,4 @@ class Items:
         """Returns the last n items in the collection"""
 
         # Initialize and return a subset of items
-        return self._collection.tail(n=n, items=self._copy())
+        return self._collection.tail(n=n, items=self)

@@ -125,7 +125,7 @@ class Item(metaclass=ItemMetaclass):
         representation = self.__class__.__name__
 
         # Add angle brackets to representation
-        representation = f"<{representation}: {self.__str__()}>"
+        representation = f"<{representation}: {str(self)}>"
 
         # Return representation
         return representation
@@ -159,10 +159,6 @@ class Item(metaclass=ItemMetaclass):
             elif isinstance(key, tuple):
                 # Get values
                 values = tuple(getattr(self, k, None) for k in key)
-
-                # Continue if any value is null
-                if any(value in (None, "") for value in values):
-                    continue
 
                 # Return the string of the values
                 return "(" + ", ".join(str(value) for value in values) + ")"
@@ -257,6 +253,9 @@ class Item(metaclass=ItemMetaclass):
         # Declare type of pushed at
         pushed_at: datetime | None
 
+        # Declare type of pulled at
+        pulled_at: datetime | None
+
         # ┌─────────────────────────────────────────────────────────────────────────────
         # │ __INIT__
         # └─────────────────────────────────────────────────────────────────────────────
@@ -269,3 +268,6 @@ class Item(metaclass=ItemMetaclass):
 
             # Initialize pushed at
             self.pushed_at = None
+
+            # Initialize pulled at
+            self.pulled_at = None
