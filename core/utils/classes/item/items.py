@@ -157,19 +157,20 @@ class Items:
 
         # Iterate over kwargs
         for key, value in kwargs.items():
-            # Iterate over operators
-            for operator in operators:
-                # Get operator suffix
-                operator_suffix = "__" + operator
+            # Split key
+            key_split = key.split("__")
 
-                # Check if key ends with operator suffix
-                if key.endswith(operator_suffix):
-                    # Remove suffix from key
-                    key = key.removesuffix(operator_suffix)
+            # Get operator
+            operator = key_split[-1]
 
-                    # Append condition to conditions and break
-                    conditions.append((key, operator, value))
-                    break
+            # Check if operator is in operators
+            if operator in operators:
+                # Remove operator suffix from key
+                key = key.removesuffix(f"__{operator}")
+
+                # Append condition to conditions and break
+                conditions.append((key, operator, value))
+                break
 
             # Otherwise set default operator
             else:
