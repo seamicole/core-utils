@@ -12,7 +12,6 @@ from typing import Any, Generator, Iterable, TYPE_CHECKING
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.utils.classes.item.items import Items
-from core.utils.enums.operator import Operator
 
 if TYPE_CHECKING:
     from core.utils.classes.item.item import Item
@@ -80,7 +79,7 @@ class Collection(ABC):
     @abstractmethod
     def filter(
         self,
-        collection: tuple[tuple[str, Operator, Any], ...],
+        collection: tuple[tuple[str, str, Any], ...],
         items: Items | None = None,
     ) -> Items:
         """Filters items in the collection"""

@@ -187,14 +187,14 @@ class Item(metaclass=ItemMetaclass):
         # │ CLASS ATTRIBUTES
         # └─────────────────────────────────────────────────────────────────────────────
 
-        # Initialize indexes
-        INDEXES: tuple[str | tuple[str, ...], ...] = ()
-
         # Initialize items
         ITEMS: Collection | Items | None = None
 
         # Initialize keys
         KEYS: tuple[str | tuple[str, ...], ...] = ()
+
+        # Initialize indexes
+        INDEXES: tuple[str | tuple[str, ...], ...] = ()
 
         # ┌─────────────────────────────────────────────────────────────────────────────
         # │ INSTANCE ATTRIBUTES

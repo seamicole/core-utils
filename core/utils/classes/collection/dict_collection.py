@@ -13,9 +13,7 @@ from typing import Any, Generator, Iterable, TYPE_CHECKING
 # └─────────────────────────────────────────────────────────────────────────────────────
 
 from core.utils.classes.collection.collection import Collection
-from core.utils.enums.operator import Operator
 from core.utils.exceptions import DoesNotExistError, DuplicateKeyError
-from core.utils.functions.comparison import compare_values
 
 if TYPE_CHECKING:
     from core.utils.classes.item.item import Item
@@ -64,6 +62,42 @@ class DictCollection(Collection):
 
         # Initialize keys by item ID
         self._keys_by_item_id = {}
+
+    # ┌─────────────────────────────────────────────────────────────────────────────────
+    # │ _COMPARE
+    # └─────────────────────────────────────────────────────────────────────────────────
+
+    def _compare(self, left: Any, right: Any, operator: str) -> bool | None:
+        """Returns a boolean comparison of two values based on an operator"""
+
+        # Initialize try-except block
+        try:
+            # Handle case of equal to
+            if operator == "equals":
+                return left == right  # type: ignore
+
+            # Otherwise, handle case of less than
+            if operator == "lt":
+                return left < right  # type: ignore
+
+            # Otherwise handle case of less than or equal to
+            elif operator == "lte":
+                return left <= right  # type: ignore
+
+            # Otherwise handle case of greater than
+            elif operator == "gt":
+                return left > right  # type: ignore
+
+            # Otherwise handle case of greater than or equal to
+            elif operator == "gte":
+                return left >= right  # type: ignore
+
+        # Handle TypeError
+        except TypeError:
+            pass
+
+        # Return None by default
+        return None
 
     # ┌─────────────────────────────────────────────────────────────────────────────────
     # │ _ISSUE ITEM ID
@@ -135,7 +169,7 @@ class DictCollection(Collection):
 
     def filter(
         self,
-        conditions: tuple[tuple[str, Operator, Any], ...],
+        conditions: tuple[tuple[str, str, Any], ...],
         items: Items | None = None,
     ) -> Items:
         """Returns a filtered collection of items"""
@@ -156,10 +190,10 @@ class DictCollection(Collection):
                     actual = getattr(item, attr)
 
                     # Handle case of equals
-                    if operator in (Operator.EQUALS, Operator.IEQUALS):
+                    if operator in ("equals", "iequals"):
                         # Check if case-insensitive equals
                         if (
-                            operator == Operator.IEQUALS
+                            operator == "iequals"
                             and isinstance(actual, str)
                             and isinstance(expected, str)
                         ):
@@ -167,21 +201,64 @@ class DictCollection(Collection):
                             actual = actual.lower()
                             expected = expected.lower()
 
-                        # Break if item does not equal value
+                        # Break if actual does not equal expected
                         if actual != expected:
                             break
 
                     # Otherwise handle case of less than
-                    elif operator in (
-                        Operator.LT,
-                        Operator.LTE,
-                        Operator.GT,
-                        Operator.GTE,
-                    ):
+                    elif operator in ("lt", "lte", "gt", "gte"):
                         # Break if item comparison evaluates to False
-                        if not compare_values(
+                        if not self._compare(
                             left=actual, right=expected, operator=operator
                         ):
+                            break
+
+                    # Otherwise handle case of in
+                    elif operator in ("in", "iin"):
+                        # Check if case-insensitive in
+                        if operator == "iin" and isinstance(actual, str):
+                            # Set actual to lowercase
+                            actual = actual.lower()
+
+                            # Check if expected is a string
+                            if isinstance(expected, str):
+                                # Set expected to lowercase
+                                expected = expected.lower()
+
+                            # Otherwise check if expected is an iterable
+                            elif isinstance(expected, Iterable):
+                                # Lowercase each item in expected
+                                expected = set(
+                                    x.lower() if isinstance(x, str) else x
+                                    for x in expected
+                                )
+
+                        # Break if actual not in expected
+                        if actual not in expected:
+                            break
+
+                    # Otherwise handle case of contains
+                    elif operator in ("contains", "icontains"):
+                        # Check if case-insensitive contains
+                        if operator == "icontains" and isinstance(expected, str):
+                            # Set expected to lowercase
+                            expected = expected.lower()
+
+                            # Check if actual is a string
+                            if isinstance(actual, str):
+                                # Set actual to lowercase
+                                actual = actual.lower()
+
+                            # Otherwise check if actual is an iterable
+                            elif isinstance(actual, Iterable):
+                                # Lowercase each item in actual
+                                actual = set(
+                                    x.lower() if isinstance(x, str) else x
+                                    for x in actual
+                                )
+
+                        # Break if expected not in actual
+                        if expected not in actual:
                             break
 
                 # Otherwise yield item
