@@ -79,7 +79,7 @@ class Collection(ABC):
     @abstractmethod
     def filter(
         self,
-        collection: tuple[tuple[str, str, Any], ...],
+        conditions: tuple[tuple[str, str, Any], ...],
         items: Items | None = None,
     ) -> Items:
         """Filters items in the collection"""
